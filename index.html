@@ -1010,6 +1010,12 @@
 
     /* Chart containers shrink */
     .chart-container { height: 200px !important; }
+    /* Horizontal bar charts need more height on mobile to show all names */
+    #winRateChart, #volatilityChart { min-height: 280px; }
+    .dash-card:has(#winRateChart) .chart-container,
+    .dash-card:has(#volatilityChart) .chart-container { height: 300px !important; }
+    /* Donut needs extra height for bottom legend */
+    .dash-card:has(#champDonut) .chart-container { height: 280px !important; }
 
     /* Player toggle buttons — tighter */
     .pts-toggle-btn { font-size: 0.62rem; padding: 4px 9px; }
@@ -1614,11 +1620,18 @@ function dashStd(arr) {
 }
 
 // Chart defaults
+const isMobile = window.innerWidth <= 480;
+const isTablet = window.innerWidth <= 768;
+const chartFontSize = isMobile ? 8 : isTablet ? 9 : 11;
+const chartLabelSize = isMobile ? 8 : isTablet ? 9 : 11;
+
 const chartDefaults = {
-  plugins: { legend: { labels: { color:'rgba(255,255,255,0.6)', font:{ family:'Exo 2', size:11 } } } },
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color:'rgba(255,255,255,0.6)', font:{ family:'Exo 2', size:chartFontSize } } } },
   scales: {
-    x: { ticks:{ color:'rgba(255,255,255,0.4)', font:{family:'Exo 2',size:10} }, grid:{ color:'rgba(255,255,255,0.05)' } },
-    y: { ticks:{ color:'rgba(255,255,255,0.4)', font:{family:'Exo 2',size:10} }, grid:{ color:'rgba(255,255,255,0.05)' } }
+    x: { ticks:{ color:'rgba(255,255,255,0.4)', font:{family:'Exo 2',size:chartFontSize}, maxRotation: isMobile ? 45 : 0 }, grid:{ color:'rgba(255,255,255,0.05)' } },
+    y: { ticks:{ color:'rgba(255,255,255,0.4)', font:{family:'Exo 2',size:chartLabelSize} }, grid:{ color:'rgba(255,255,255,0.05)' } }
   },
   animation: { duration: 800, easing: 'easeInOutQuart' }
 };
@@ -1690,9 +1703,10 @@ loadChartJS(() => {
       indexAxis: 'y',
       ...chartDefaults,
       plugins: { legend: { display: false } },
+      layout: { padding: { left: isMobile ? 0 : 0 } },
       scales: {
-        x: { ...chartDefaults.scales.x, min: 35, max: 65, ticks: { ...chartDefaults.scales.x.ticks, callback: v => v + '%' } },
-        y: chartDefaults.scales.y
+        x: { ...chartDefaults.scales.x, min: 35, max: 65, ticks: { ...chartDefaults.scales.x.ticks, maxRotation: 0, callback: v => v + '%' } },
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, font: { family:'Exo 2', size: chartLabelSize }, mirror: false } }
       }
     }
   });
@@ -1714,9 +1728,14 @@ loadChartJS(() => {
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       cutout: '65%',
       plugins: {
-        legend: { position: 'right', labels: { color:'rgba(255,255,255,0.6)', font:{family:'Exo 2',size:11}, padding: 12 } }
+        legend: {
+          position: isMobile ? 'bottom' : 'right',
+          labels: { color:'rgba(255,255,255,0.6)', font:{family:'Exo 2',size:chartLabelSize}, padding: isMobile ? 8 : 12, boxWidth: isMobile ? 10 : 14 }
+        }
       },
       animation: { duration: 1000, easing: 'easeInOutQuart' }
     }
@@ -1865,8 +1884,8 @@ loadChartJS(() => {
       ...chartDefaults,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks } },
-        y: chartDefaults.scales.y
+        x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks, maxRotation: 0 } },
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, font: { family:'Exo 2', size: chartLabelSize } } }
       }
     }
   });
