@@ -1470,7 +1470,13 @@ function buildRankingsTable() {
   YEARS.forEach(y => html += `<th>${y}</th>`);
   html += '<th>Avg</th></tr></thead><tbody>';
   
-  const players = Object.keys(RANKINGS);
+  const players = Object.keys(RANKINGS).sort((a, b) => {
+    const avgRank = p => {
+      const v = RANKINGS[p].filter(x => x !== null);
+      return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 999;
+    };
+    return avgRank(a) - avgRank(b);
+  });
   players.forEach(p => {
     const ranks = RANKINGS[p];
     const valid = ranks.filter(x=>x!==null);
@@ -1764,8 +1770,9 @@ loadChartJS(() => {
     .map(p => p.name);
 
   let selectedPtsPlayers = new Set(defaultSelected);
+  window.selectedPtsPlayers = selectedPtsPlayers;
 
-  function buildPtsDatasets() {
+  window.buildPtsDatasets = function buildPtsDatasets() {
     return [...selectedPtsPlayers].map(p => ({
       label: p,
       data: CHART_YEARS.map((yr,i) => DASH_POINTS[p][i] ?? null),
@@ -1805,6 +1812,8 @@ loadChartJS(() => {
       }
     }
   });
+  window.ptsChart = ptsChart;
+  window.ALL_PTS_PLAYERS = ALL_PTS_PLAYERS;
 
   // Build toggle buttons
   const toggleWrap = document.getElementById('ptsPlayerToggleWrap');
